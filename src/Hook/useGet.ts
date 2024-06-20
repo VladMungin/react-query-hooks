@@ -1,13 +1,18 @@
 import axios from 'axios'
 import { useQuery } from 'react-query'
-import { Comment, Post, User } from '../Types/types'
+import { Post } from '../Types/types'
 
-export const useGetSomeData = (url: string) => {
-	return useQuery<Post[] | User[] | Comment[]>({
-		queryKey: [url],
-		queryFn: async () => {
-			const {data} = await axios.get(`https://jsonplaceholder.typicode.com/${url}`)
-			return data as (Post[] | User[] | Comment[])
-		}
+const getData = (url: string) => {
+	return axios.get<Post[]>(`https://jsonplaceholder.typicode.com/${url}`)
+}
+
+export function useGetSomeData(url: string) {
+	const { data, isLoading, isSuccess, refetch } = useQuery({
+		queryKey: ['posts', url],
+		queryFn: () => getData(url),
+		select: data => data.data,
+		enabled: !!url,
 	})
+
+	return { posts: data, isLoading, isSuccess, refetchPosts: refetch }
 }
